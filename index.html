@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta />
+    <title>Document</title>
+  </head>
+
+  <body>
+    <body>
+      <img src="https://i0.hdslb.com/bfs/feed-admin/92def937c2647e6344922346feeb944b2d226ce9.jpg@412w_232h_1c" />
+      <button onclick="addCanvas()">生成Canvas</button>
+      <button onclick="generateImg()">生成图片</button>
+    </body>
+    <script>
+      function addCanvas() {
+        let bt = document.querySelector('button')
+
+        let img = new Image()
+        img.src = 'https://i0.hdslb.com/bfs/feed-admin/92def937c2647e6344922346feeb944b2d226ce9.jpg@412w_232h_1c' //这里放自己的图片
+        img.onload = function () {
+          let width = this.width
+          let height = this.height
+
+          let { canvas, ctx } = createCanvasAndCtx(width, height)
+
+          ctx.drawImage(this, 0, 0, width, height)
+
+          document.body.insertBefore(canvas, bt)
+        }
+      }
+
+      function createCanvasAndCtx(width, height) {
+        let canvas = document.createElement('canvas')
+        canvas.setAttribute('width', width)
+        canvas.setAttribute('height', height)
+        canvas.setAttribute('onmouseout', 'end()')
+        canvas.setAttribute('onmousedown', 'start()')
+        canvas.setAttribute('onmouseup', 'end()')
+        let ctx = canvas.getContext('2d')
+        return {
+          canvas,
+          ctx,
+        }
+      }
+
+      function start() {
+        let img = document.querySelector('img')
+        let canvas = document.querySelector('canvas')
+        let ctx = canvas.getContext('2d')
+        imgData = ctx.getImageData(0, 0, img.clientWidth, img.clientHeight)
+        canvas.onmousemove = e => {
+          let w = imgData.width //1.获取图片宽高
+          let h = imgData.height
+
+          //马赛克的程度，数字越大越模糊
+          let num = 10
+
+          //获取鼠标当前所在的像素RGBA
+          let color = getXY(imgData, e.offsetX, e.offsetY)
+
+          for (let k = 0; k < num; k++) {
+            for (let l = 0; l < num; l++) {
+              //设置imgData上坐标为(e.offsetX + l, e.offsetY + k)的的颜色
+              setXY(imgData, e.offsetX + l, e.offsetY + k, color)
+            }
+          }
+          //更新canvas数据
+          ctx.putImageData(imgData, 0, 0)
+        }
+      }
+
+      function generateImg() {
+        let canvas = document.querySelector('canvas')
+        var newImg = new Image()
+        newImg.src = canvas.toDataURL('image/png')
+        document.body.insertBefore(newImg, canvas)
+      }
+
+      function setXY(obj, x, y, color) {
+        var w = obj.width
+        var h = obj.height
+        var d = obj.data
+        obj.data[4 * (y * w + x)] = color[0]
+        obj.data[4 * (y * w + x) + 1] = color[1]
+        obj.data[4 * (y * w + x) + 2] = color[2]
+        obj.data[4 * (y * w + x) + 3] = color[3]
+      }
+
+      function getXY(obj, x, y) {
+        var w = obj.width
+        var h = obj.height
+        var d = obj.data
+        var color = []
+        color[0] = obj.data[4 * (y * w + x)]
+        color[1] = obj.data[4 * (y * w + x) + 1]
+        color[2] = obj.data[4 * (y * w + x) + 2]
+        color[3] = obj.data[4 * (y * w + x) + 3]
+        return color
+      }
+
+      function end() {
+        let canvas = document.querySelector('canvas')
+        canvas.onmousemove = null
+      }
+    </script>
+  </body>
+</html>
